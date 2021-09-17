@@ -7,6 +7,7 @@ public class FiniteStateMachine : MonoBehaviour
     [SerializeField]
     AbstractFSMState startingState;
 
+    //test
     AbstractFSMState currentState;
 
     public void Awake()
