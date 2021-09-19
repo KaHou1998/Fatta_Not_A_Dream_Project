@@ -9,6 +9,7 @@ public class EnemyNPC : MonoBehaviour
     NavMeshAgent navMeshAgent;
     FiniteStateMachine finateStateMachine;
 
+
     
     public void Awake()
     {
