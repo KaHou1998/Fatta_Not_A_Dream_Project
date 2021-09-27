@@ -20,6 +20,9 @@ public class NPC_EnemyAttackState : EnemyState
     public EnemyState DoState(NPC_ClassBased npc)
     {
         npc.navAgent = npc.GetComponent<NavMeshAgent>();
+        npc.mesh = npc.GetComponent<Renderer>();
+        npc.anim = npc.GetComponentInChildren<Animator>();
+        npc.attackAnim = npc.GetComponentInChildren<Animation>();
 
         if (Vector3.Distance(npc.transform.position, npc.playerRef.transform.position) > npc.triggerRange + (npc.transform.localScale.x / 2))
         {
@@ -36,12 +39,13 @@ public class NPC_EnemyAttackState : EnemyState
 
             case attackState.attackStart:
                 _attackState = attackState.attacking;
-                attackDelayCounter = attackDelay;
+                attackDelayCounter = attackDelay;                
                 Debug.Log("attack start");
                 break;
 
             case attackState.attacking:
-                CountDown(attackState.attackEnd);
+                npc.anim.SetBool("Moving", false);
+                CountDown(attackState.attackEnd, npc.getDamage(), npc.attackAnim);
                 Debug.Log("attacking");
                 break;
 
@@ -70,7 +74,7 @@ public class NPC_EnemyAttackState : EnemyState
         {
               if (Vector3.Distance(npc.transform.position, npc.playerRef.transform.position) < npc.meleeRange + (npc.transform.localScale.x / 2))
               {
-                   npc.navAgent.ResetPath();
+                   npc.navAgent.ResetPath();                  
                    _attackState = attackState.attackStart;
               }
               else
@@ -81,12 +85,13 @@ public class NPC_EnemyAttackState : EnemyState
       
     }
 
-    void CountDown(attackState nextStateToChange)
+    void CountDown(attackState nextStateToChange, int damage, Animation anim)
     {
         attackDelayCounter -= Time.deltaTime;
         if(attackDelayCounter <= 0)
-        {
-            Debug.Log("Duel damage");
+        {          
+            Debug.Log("Duel damage: " + damage);
+
             _attackState = nextStateToChange;
             attackDelayCounter = attackDelay;
         }

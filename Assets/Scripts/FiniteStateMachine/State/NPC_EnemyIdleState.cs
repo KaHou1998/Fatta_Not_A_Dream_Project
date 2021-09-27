@@ -9,6 +9,7 @@ public class NPC_EnemyIdleState : EnemyState
     {
         //Debug.Log("Idle");
         npc.navAgent = npc.GetComponent<NavMeshAgent>();
+        npc.anim = npc.GetComponentInChildren<Animator>();
 
         Patrol(npc);
 
@@ -25,7 +26,8 @@ public class NPC_EnemyIdleState : EnemyState
 
     void Patrol(NPC_ClassBased npc)
     {
-        if(npc.patrolPoint[npc.patrolPointCount] != null)
+        npc.anim.SetBool("Moving", true);
+        if (npc.patrolPoint[npc.patrolPointCount] != null)
         {
             float dist = npc.navAgent.remainingDistance;
             if(npc.navAgent != null)
@@ -34,7 +36,7 @@ public class NPC_EnemyIdleState : EnemyState
                 {
                     npc.patrolPointCount = (npc.patrolPointCount + 1) % npc.patrolPoint.Length;
                 }
-                npc.navAgent.SetDestination(npc.patrolPoint[npc.patrolPointCount].position);
+                npc.navAgent.SetDestination(npc.patrolPoint[npc.patrolPointCount].position);              
             }
             
         }
