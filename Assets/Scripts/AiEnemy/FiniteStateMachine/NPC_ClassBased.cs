@@ -9,44 +9,50 @@ public class NPC_ClassBased : Enemy
     [SerializeField]
     private string currentStateName;
     private EnemyState currentState;
+    public EnemyState newState;
 
     public NPC_EnemyAttackState attackState = new NPC_EnemyAttackState();
     public NPC_EnemyIdleState idleState = new NPC_EnemyIdleState();
 
+    [Header("Component Reference")]
     public NavMeshAgent navAgent;
-
     public Renderer mesh;
+    public GameObject playerRef;
+    public Transform[] patrolPoint;
+    public Animator anim;
 
     [HideInInspector]
     public GameObject attackTarget;
 
-    public GameObject playerRef;
+    [HideInInspector]
+    public int patrolPointCounter;
 
-    public Transform[] patrolPoint;
-
-    public int patrolPointCount;
-
+    [Header("Enemy Settings")]
     public float triggerRange;
-
     public float meleeRange;
-
     public EnemyData enemyData;
 
-    public Animation attackAnim;
-
-    public Animator anim;
+   
 
     private void OnEnable()
     {
         currentState = idleState;
-        patrolPointCount = 0;
+        newState = currentState;
+        patrolPointCounter = 0;
         Init();
     }
 
 
     private void Update()
     {
-        currentState = currentState.DoState(this);
+        currentState.DoState(this);
+        if (newState != currentState)
+        {
+            //currentState.OnExit();
+            newState.OnEnter(this);
+            currentState = newState;
+        }
+        
     }
   
     void OnDrawGizmosSelected()
@@ -64,8 +70,15 @@ public class NPC_ClassBased : Enemy
         damage = enemyData.damage;
         movementSpeed = enemyData.movementSpeed;
         enemyType = enemyData.type;
+        attackDelay = enemyData.attackDelay;
+        patrolDelay = enemyData.patrolDelay;
+        navAgent.speed = movementSpeed;
     }
 
+    protected override void setAttackDelay(float newAttackDelay)
+    {
+        attackDelay = newAttackDelay;
+    }
     protected override void setHealth(int newHealth)
     {
         health = newHealth;
@@ -96,6 +109,16 @@ public class NPC_ClassBased : Enemy
         return movementSpeed;
     }
 
+    public override float getAttackDelay()
+    {
+        return attackDelay;
+    }
+
+    public override float getpatrolDelay()
+    {
+        return patrolDelay;
+    }
+
     public override void takeDamage(int damageAmount)
     {
         int newHealth = health - damageAmount;
@@ -106,5 +129,10 @@ public class NPC_ClassBased : Enemy
     {
         int newMovementSpeed = movementSpeed - slowAmount;
         setSpeed(slowAmount);
+    }
+
+    public void ChangeState(EnemyState _newState)
+    {
+        newState = _newState;
     }
 }

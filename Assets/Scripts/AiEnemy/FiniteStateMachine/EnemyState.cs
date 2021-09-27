@@ -4,5 +4,8 @@ using UnityEngine;
 
 public interface EnemyState 
 {
-    EnemyState DoState(NPC_ClassBased npc);
+    void DoState(NPC_ClassBased npc);
+    void OnEnter(NPC_ClassBased npc);
+
+    void OnExit();
 }

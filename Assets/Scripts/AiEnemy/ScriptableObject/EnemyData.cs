@@ -10,6 +10,8 @@ public class EnemyData : ScriptableObject
     public int level;
     public int movementSpeed;
     public Type type;
+    public float attackDelay;
+    public float patrolDelay;
 }
 
 
