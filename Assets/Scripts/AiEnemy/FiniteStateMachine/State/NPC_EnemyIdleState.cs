@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class NPC_EnemyIdleState : EnemyState
 {
     float DelayCounter;
-
+    Vector3 PetrolLocation;
 
     public void OnEnter(NPC_ClassBased npc)
     {
@@ -45,8 +45,19 @@ public class NPC_EnemyIdleState : EnemyState
                 {
                     if(CountDown())
                     {
-                        npc.patrolPointCounter = (npc.patrolPointCounter + 1) % npc.patrolPoint.Length;
+                        npc.patrolPointCounter = (npc.patrolPointCounter + 1) % npc.patrolPoint.Length;                        
                         DelayCounter = npc.getpatrolDelay();
+                        bool useable = false;
+                        while(useable == false)
+                        {
+                            NavMeshHit hit;
+                            if (NavMesh.SamplePosition(npc.patrolPoint[npc.patrolPointCounter].GenerateRandomPoint(), out hit, 1.0f, NavMesh.AllAreas))
+                            {
+                                PetrolLocation = hit.position;
+                                useable = true;
+                            }
+                        }
+
                     }
                     npc.anim.SetBool("Moving", false);
                 }
@@ -54,7 +65,8 @@ public class NPC_EnemyIdleState : EnemyState
                 {
                     npc.anim.SetBool("Moving", true);
                 }
-                npc.navAgent.SetDestination(npc.patrolPoint[npc.patrolPointCounter].position);
+                //npc.navAgent.SetDestination(npc.patrolPoint[npc.patrolPointCounter].GenerateRandomPoint());
+                npc.navAgent.SetDestination(PetrolLocation);
             }
 
         }

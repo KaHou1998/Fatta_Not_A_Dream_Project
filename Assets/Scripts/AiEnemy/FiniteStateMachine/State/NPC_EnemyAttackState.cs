@@ -27,13 +27,6 @@ public class NPC_EnemyAttackState : EnemyState
 
     public void DoState(NPC_ClassBased npc)
     {       
-        if (Vector3.Distance(npc.transform.position, npc.playerRef.transform.position) > npc.triggerRange + (npc.transform.localScale.x / 2))
-        {
-            ResetState();
-            //return npc.idleState;
-            npc.ChangeState(npc.idleState);
-        }
-
         switch (_attackState)
         {
             case attackState.searchEnemy:
@@ -48,13 +41,8 @@ public class NPC_EnemyAttackState : EnemyState
 
             case attackState.attacking:
                 npc.anim.SetBool("Moving", false);
-                if(CountDown())
-                {
-                    _attackState = attackState.attackEnd;
-                    Debug.Log("Duel damage: " + npc.getDamage());
-                    npc.anim.SetTrigger("IsAttack");
-                    attackDelayCounter = npc.getAttackDelay();
-                }
+                npc.transform.LookAt(npc.playerRef.transform);
+                Attack(npc);
                 Debug.Log("attacking");
                 break;
 
@@ -76,26 +64,45 @@ public class NPC_EnemyAttackState : EnemyState
         {
             //return npc.attackState;
             npc.ChangeState(npc.attackState);
-        }      
+        }  
     }
 
     void MoveToAttackTarget(NPC_ClassBased npc)
     {
         if (npc.playerRef != null)
         {
-              if (Vector3.Distance(npc.transform.position, npc.playerRef.transform.position) < npc.meleeRange + (npc.transform.localScale.x / 2))
-              {
+            if (IsPlayerInTriggerRange(npc))
+            {
                    npc.navAgent.ResetPath();
-                   npc.anim.SetBool("Moving", true);
                    _attackState = attackState.attackStart;
-              }
-              else
-              {
+            }
+            else if(Vector3.Distance(npc.transform.position, npc.playerRef.transform.position) > npc.triggerRange + (npc.transform.localScale.x / 2))
+            {
+                  ResetState();
+                _attackState = attackState.attackEnd;
+            }
+            else 
+            {
                    npc.anim.SetBool("Moving", true);
                    npc.navAgent.SetDestination(npc.playerRef.transform.position);
-              }            
+                   npc.transform.LookAt(npc.playerRef.transform);
+            }            
         }
       
+    }
+
+    void Attack(NPC_ClassBased npc)
+    {
+        if (CountDown())
+        {            
+            Debug.Log("Duel damage: " + npc.getDamage());
+            npc.anim.SetTrigger("IsAttack");
+            attackDelayCounter = npc.getAttackDelay();
+            if(!IsPlayerInTriggerRange(npc))
+            {
+                _attackState = attackState.attackEnd;
+            }
+        }
     }
 
     bool CountDown()
@@ -116,5 +123,17 @@ public class NPC_EnemyAttackState : EnemyState
     public void OnExit()
     {
 
+    }
+
+    bool IsPlayerInTriggerRange(NPC_ClassBased npc)
+    {
+        if(Vector3.Distance(npc.transform.position, npc.playerRef.transform.position) < npc.meleeRange + (npc.transform.localScale.x / 2))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

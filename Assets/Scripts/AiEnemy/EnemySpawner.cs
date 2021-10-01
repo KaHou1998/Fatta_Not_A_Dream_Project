@@ -18,7 +18,7 @@ public class EnemySpawner : MonoBehaviour
 
     float spawnCounter;
 
-    private void Awake()
+    private void Start()
     {
         enemyManager = EnemyManager.instance;
         enemies = new List<GameObject>();

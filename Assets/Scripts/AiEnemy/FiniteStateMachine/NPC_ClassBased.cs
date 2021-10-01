@@ -18,7 +18,7 @@ public class NPC_ClassBased : Enemy
     public NavMeshAgent navAgent;
     public Renderer mesh;
     public GameObject playerRef;
-    public Transform[] patrolPoint;
+    public Waypoint[] patrolPoint;
     public Animator anim;
 
     [HideInInspector]
