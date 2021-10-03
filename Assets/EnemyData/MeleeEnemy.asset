@@ -15,5 +15,7 @@ MonoBehaviour:
   health: 10
   damage: 2
   level: 5
-  movementSpeed: 0
+  movementSpeed: 2
   type: 0
+  attackDelay: 2
+  patrolDelay: 5
