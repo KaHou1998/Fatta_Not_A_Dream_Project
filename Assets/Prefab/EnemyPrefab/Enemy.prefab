@@ -62,7 +62,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentStateName: 
   navAgent: {fileID: 4862464779333816858}
-  mesh: {fileID: 0}
+  mesh: {fileID: 4862464780009221599}
   playerRef: {fileID: 0}
   patrolPoint:
   - {fileID: 0}
@@ -84,7 +84,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 4862464779333816860}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.67
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -247,6 +247,11 @@ Transform:
 --- !u!95 &4862464780005135113 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 9500000, guid: 9035850883732af4daf57c888e1fefce, type: 3}
+  m_PrefabInstance: {fileID: 4862464780014528105}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &4862464780009221599 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 13700022, guid: 9035850883732af4daf57c888e1fefce, type: 3}
   m_PrefabInstance: {fileID: 4862464780014528105}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &4862464780014402773 stripped

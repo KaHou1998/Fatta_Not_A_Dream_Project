@@ -45,7 +45,7 @@ public class NPC_EnemyIdleState : EnemyState
                 {
                     if(CountDown())
                     {
-                        npc.patrolPointCounter = (npc.patrolPointCounter + 1) % npc.patrolPoint.Length;                        
+                        npc.patrolPointCounter = (npc.patrolPointCounter + 1) % npc.patrolPoint.Count;                        
                         DelayCounter = npc.getpatrolDelay();
                         bool useable = false;
                         while(useable == false)

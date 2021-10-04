@@ -18,7 +18,7 @@ public class NPC_ClassBased : Enemy
     public NavMeshAgent navAgent;
     public Renderer mesh;
     public GameObject playerRef;
-    public Waypoint[] patrolPoint;
+    public List<Waypoint> patrolPoint;
     public Animator anim;
 
     [HideInInspector]
@@ -39,6 +39,7 @@ public class NPC_ClassBased : Enemy
         currentState = idleState;
         newState = currentState;
         patrolPointCounter = 0;
+        playerRef = GameObject.Find("Player");
         Init();
     }
 
