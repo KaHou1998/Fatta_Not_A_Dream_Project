@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class NPC_EnemyIdleState : EnemyState
 {
     float DelayCounter;
-    Vector3 PetrolLocation;
+    Vector3 PatrolLocation;
 
     public void OnEnter(NPC_ClassBased npc)
     {
@@ -21,15 +21,16 @@ public class NPC_EnemyIdleState : EnemyState
        
         Patrol(npc);
 
-        if (Vector3.Distance(npc.playerRef.transform.position, npc.transform.position) < npc.triggerRange)
+        /*if (Vector3.Distance(npc.playerRef.transform.position, npc.transform.position + npc.trOffset) < npc.triggerRange)
         {
             npc.navAgent.ResetPath();
-            //return npc.attackState;
             npc.ChangeState(npc.attackState);
-        }
-        else
+        }*/
+
+        if(npc.FindVisibleTargets())
         {
-            //return npc.idleState;
+            npc.navAgent.ResetPath();
+            npc.ChangeState(npc.attackState);
         }
     }
 
@@ -45,18 +46,10 @@ public class NPC_EnemyIdleState : EnemyState
                 {
                     if(CountDown())
                     {
+                        npc.patrolPoint[npc.patrolPointCounter].ExitVector(PatrolLocation);
                         npc.patrolPointCounter = (npc.patrolPointCounter + 1) % npc.patrolPoint.Count;                        
-                        DelayCounter = npc.getpatrolDelay();
-                        bool useable = false;
-                        while(useable == false)
-                        {
-                            NavMeshHit hit;
-                            if (NavMesh.SamplePosition(npc.patrolPoint[npc.patrolPointCounter].GenerateRandomPoint(), out hit, 1.0f, NavMesh.AllAreas))
-                            {
-                                PetrolLocation = hit.position;
-                                useable = true;
-                            }
-                        }
+                        DelayCounter = npc.getpatrolDelay();                       
+                        PatrolLocation = npc.patrolPoint[npc.patrolPointCounter].AvailablePoint();
 
                     }
                     npc.anim.SetBool("Moving", false);
@@ -66,7 +59,16 @@ public class NPC_EnemyIdleState : EnemyState
                     npc.anim.SetBool("Moving", true);
                 }
                 //npc.navAgent.SetDestination(npc.patrolPoint[npc.patrolPointCounter].GenerateRandomPoint());
-                npc.navAgent.SetDestination(PetrolLocation);
+                if(PatrolLocation != Vector3.zero)
+                {
+                    npc.navAgent.SetDestination(PatrolLocation);
+                }
+                else
+                {
+                    npc.patrolPointCounter = (npc.patrolPointCounter + 1) % npc.patrolPoint.Count;
+                    PatrolLocation = npc.patrolPoint[npc.patrolPointCounter].AvailablePoint();
+                }
+                    
             }
 
         }

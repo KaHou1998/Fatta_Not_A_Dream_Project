@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4862464779333816858}
   m_Layer: 0
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: EnemyAi
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -72,9 +72,16 @@ MonoBehaviour:
   anim: {fileID: 4862464780005135113}
   attackTarget: {fileID: 0}
   patrolPointCounter: 0
-  triggerRange: 4
+  triggerRange: 0
   meleeRange: 1.5
   enemyData: {fileID: 11400000, guid: e241fbbb346ff9d4cab32ae3a113a3d0, type: 2}
+  spaceBetween: 2
+  trOffset: {x: 0, y: 0, z: 0}
+  viewRadius: 2.31
+  viewAngle: 87
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!195 &4862464779333816858
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -84,18 +91,18 @@ NavMeshAgent:
   m_GameObject: {fileID: 4862464779333816860}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.67
+  m_Radius: 0.1
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 1000
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 0
+  m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 2.25
   m_BaseOffset: 1
-  m_WalkableMask: 4294967295
+  m_WalkableMask: 5
   m_ObstacleAvoidanceType: 4
 --- !u!1001 &3284350781768540504
 PrefabInstance:

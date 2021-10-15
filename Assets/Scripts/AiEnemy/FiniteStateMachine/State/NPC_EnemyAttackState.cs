@@ -76,11 +76,6 @@ public class NPC_EnemyAttackState : EnemyState
                    npc.navAgent.ResetPath();
                    _attackState = attackState.attackStart;
             }
-            else if(Vector3.Distance(npc.transform.position, npc.playerRef.transform.position) > npc.triggerRange + (npc.transform.localScale.x / 2))
-            {
-                  ResetState();
-                _attackState = attackState.attackEnd;
-            }
             else 
             {
                    npc.anim.SetBool("Moving", true);

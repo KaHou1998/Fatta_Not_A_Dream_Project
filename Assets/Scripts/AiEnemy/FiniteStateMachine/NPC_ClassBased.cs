@@ -20,6 +20,8 @@ public class NPC_ClassBased : Enemy
     public GameObject playerRef;
     public List<Waypoint> patrolPoint;
     public Animator anim;
+    // Steering Behavior
+    //public steering_script seek;
 
     [HideInInspector]
     public GameObject attackTarget;
@@ -31,8 +33,14 @@ public class NPC_ClassBased : Enemy
     public float triggerRange;
     public float meleeRange;
     public EnemyData enemyData;
+    public float spaceBetween = 1.5f;
+    public Vector3 trOffset;
+    public float viewRadius;
+    [Range(0, 360)]
+    public float viewAngle;
+    public LayerMask targetMask;
 
-   
+    GameObject[] EnemyAI;
 
     private void OnEnable()
     {
@@ -43,6 +51,35 @@ public class NPC_ClassBased : Enemy
         Init();
     }
 
+    public void Start()
+    {
+        EnemyAI = GameObject.FindGameObjectsWithTag("EnemyAi");
+    }
+
+   public Vector3 DirFromAngle(float angleInDegrees, bool angleIsGlobal)
+    {
+        if(!angleIsGlobal)
+        {
+            angleInDegrees += transform.eulerAngles.y;
+        }
+        return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
+    }
+
+    public bool FindVisibleTargets()
+    {
+        Collider[] targetsInViewRadius = Physics.OverlapSphere(transform.position, viewRadius, targetMask);
+        for(int i = 0; i < targetsInViewRadius.Length; i++)
+        {
+            Transform target = targetsInViewRadius[i].transform;
+            Vector3 dirToTarget = (target.position - transform.position).normalized;
+            if (Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
     private void Update()
     {
@@ -53,13 +90,27 @@ public class NPC_ClassBased : Enemy
             newState.OnEnter(this);
             currentState = newState;
         }
-        
+
+        foreach(GameObject go in EnemyAI)
+        {
+            if(go != gameObject)
+            {
+                float distance = Vector3.Distance(go.transform.position, this.transform.position);
+                if(distance <= spaceBetween)
+                {
+                    Vector3 direction = transform.position - go.transform.position;
+                    transform.Translate(direction * Time.deltaTime);
+                }
+            }
+        }   
     }
+
+   
   
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, triggerRange);
+        Gizmos.DrawWireSphere(transform.position + trOffset, triggerRange);
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, meleeRange);

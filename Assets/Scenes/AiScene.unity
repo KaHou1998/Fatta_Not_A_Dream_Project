@@ -108,7 +108,7 @@ NavMeshSettings:
     agentTypeID: 0
     agentRadius: 0.5
     agentHeight: 2
-    agentSlope: 45
+    agentSlope: 0
     agentClimb: 0.4
     ledgeDropHeight: 0
     maxJumpAcrossDistance: 0
@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 1360389}
   - component: {fileID: 1360388}
   - component: {fileID: 1360387}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,6 +346,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   range: 5
+  agentRange: 2
 --- !u!4 &369106933
 Transform:
   m_ObjectHideFlags: 0
@@ -566,6 +567,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   range: 5
+  agentRange: 2
 --- !u!4 &1100949231
 Transform:
   m_ObjectHideFlags: 0
@@ -667,6 +669,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   range: 5
+  agentRange: 2
 --- !u!4 &1222953960
 Transform:
   m_ObjectHideFlags: 0
@@ -755,6 +758,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   range: 5
+  agentRange: 2
 --- !u!4 &1614520001
 Transform:
   m_ObjectHideFlags: 0
@@ -897,6 +901,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   range: 5
+  agentRange: 2
 --- !u!4 &2051975314
 Transform:
   m_ObjectHideFlags: 0
@@ -964,11 +969,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8289802470053531766, guid: 838a4008d35063e43bad3375440f510a, type: 3}
       propertyPath: maxSpawn
-      value: 20
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8289802470053531766, guid: 838a4008d35063e43bad3375440f510a, type: 3}
       propertyPath: spawnRate
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8289802470053531766, guid: 838a4008d35063e43bad3375440f510a, type: 3}
       propertyPath: spawnTime
