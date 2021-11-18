@@ -25,6 +25,10 @@ public class NPC_EnemyAttackState : EnemyState
         
     }
 
+    public void Update()
+    {
+
+    }
     public void DoState(NPC_ClassBased npc)
     {       
         switch (_attackState)

@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Pathfinding;
 
-[RequireComponent(typeof(NavMeshAgent))]
 public class NPC_ClassBased : Enemy     
 {
     [SerializeField]
@@ -20,6 +20,7 @@ public class NPC_ClassBased : Enemy
     public GameObject playerRef;
     public List<Waypoint> patrolPoint;
     public Animator anim;
+    public Rigidbody rigidBody;
     // Steering Behavior
     //public steering_script seek;
 
@@ -39,8 +40,13 @@ public class NPC_ClassBased : Enemy
     [Range(0, 360)]
     public float viewAngle;
     public LayerMask targetMask;
+    public float movementRangeMin;
+    public float movementRangeMax;
+    public float movingSpeed = 2.0f;
 
     GameObject[] EnemyAI;
+    public IAstarAI ai;
+
 
     private void OnEnable()
     {
@@ -48,12 +54,14 @@ public class NPC_ClassBased : Enemy
         newState = currentState;
         patrolPointCounter = 0;
         playerRef = GameObject.Find("Player");
+        ai = GetComponent<IAstarAI>();
         Init();
     }
 
     public void Start()
     {
         EnemyAI = GameObject.FindGameObjectsWithTag("EnemyAi");
+        currentState.OnEnter(this);
     }
 
    public Vector3 DirFromAngle(float angleInDegrees, bool angleIsGlobal)
@@ -83,7 +91,8 @@ public class NPC_ClassBased : Enemy
 
     private void Update()
     {
-        currentState.DoState(this);
+        //currentState.DoState(this);
+        currentState.Update();
         if (newState != currentState)
         {
             //currentState.OnExit();
@@ -91,7 +100,7 @@ public class NPC_ClassBased : Enemy
             currentState = newState;
         }
 
-        foreach(GameObject go in EnemyAI)
+        /*foreach(GameObject go in EnemyAI)
         {
             if(go != gameObject)
             {
@@ -99,13 +108,20 @@ public class NPC_ClassBased : Enemy
                 if(distance <= spaceBetween)
                 {
                     Vector3 direction = transform.position - go.transform.position;
-                    transform.Translate(direction * Time.deltaTime);
+                    //transform.Translate(direction * Time.deltaTime);
                 }
             }
-        }   
+        }*/
     }
 
-   
+   public Vector3 RandomMovePosition()
+    {
+        //Vector3 randomMovePosition = new Vector3(Random.Range(this.transform.position.x + movementRangeMin, this.transform.position.x + movementRangeMax),1.036f, Random.Range(this.transform.position.z + movementRangeMin, this.transform.position.z + movementRangeMax));
+        Vector3 randomMovePosition = new Vector3(Random.Range(this.transform.position.x - Random.Range(movementRangeMin, movementRangeMax), this.transform.position.x + Random.Range(movementRangeMin, movementRangeMax)),
+                                                  1.036f,
+                                                 Random.Range(this.transform.position.z - Random.Range(movementRangeMin, movementRangeMax), this.transform.position.z + Random.Range(movementRangeMin, movementRangeMax)));
+        return randomMovePosition;
+    }
   
     void OnDrawGizmosSelected()
     {
@@ -114,6 +130,12 @@ public class NPC_ClassBased : Enemy
 
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, meleeRange);
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, movementRangeMin);
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, movementRangeMax);
     }    
 
     protected override void Init()
@@ -124,7 +146,7 @@ public class NPC_ClassBased : Enemy
         enemyType = enemyData.type;
         attackDelay = enemyData.attackDelay;
         patrolDelay = enemyData.patrolDelay;
-        navAgent.speed = movementSpeed;
+        //navAgent.speed = movementSpeed;
     }
 
     protected override void setAttackDelay(float newAttackDelay)

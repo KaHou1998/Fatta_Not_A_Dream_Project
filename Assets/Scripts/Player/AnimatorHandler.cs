@@ -105,8 +105,8 @@ namespace SG
 
         private void OnAnimatorMove()
         {
-            if (playerManager.isInteracting == false)
-                return;
+           /* if (playerManager.isInteracting == false)
+                return;*/
 
             float delta = Time.deltaTime;
             playerLocomotion.rigidbody.drag = 0;

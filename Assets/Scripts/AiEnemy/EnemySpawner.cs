@@ -52,13 +52,15 @@ public class EnemySpawner : MonoBehaviour
                 }
             }
             spawnCounter = spawnTime;
-        }    
+        }
     }
 
     Vector3 RandomLocation()
     {
-        Vector3 SpawnLocation = new Vector3(Random.Range(this.transform.position.x-spawnRadius, this.transform.position.x+spawnRadius), 
-                                            1.036f, Random.Range(this.transform.position.z - spawnRadius, this.transform.position.z + spawnRadius));
+        //Vector3 SpawnLocation = new Vector3(Random.Range(this.transform.position.x-spawnRadius, this.transform.position.x+spawnRadius), 
+                                            //1.036f, Random.Range(this.transform.position.z - spawnRadius, this.transform.position.z + spawnRadius));
+
+        Vector3 SpawnLocation = new Vector3(Random.Range(transform.position.x - spawnRadius, this.transform.position.x + spawnRadius), 1.036f, Random.Range(this.transform.position.z - spawnRadius, this.transform.position.z + spawnRadius));
         return SpawnLocation;
     }
 

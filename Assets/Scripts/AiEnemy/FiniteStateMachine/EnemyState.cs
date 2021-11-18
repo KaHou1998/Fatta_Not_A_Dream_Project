@@ -7,5 +7,7 @@ public interface EnemyState
     void DoState(NPC_ClassBased npc);
     void OnEnter(NPC_ClassBased npc);
 
+    void Update();
+
     void OnExit();
 }
