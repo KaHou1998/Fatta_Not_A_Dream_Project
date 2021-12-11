@@ -12,6 +12,7 @@ public abstract class Enemy : MonoBehaviour
     protected float patrolDelay;
 
     //Initialize enemy stat
+
     protected virtual void Init(){}
 
     protected virtual void setHealth(int newHealth) { }

@@ -2,168 +2,131 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using Pathfinding;
 
+public class NPC_EnemyIdleState : EnemyState
+{
+    float DelayCounter;
+    IdleState curState;
 
-    public class NPC_EnemyIdleState : EnemyState
+    NPC_ClassBased classBased;
+    enum IdleState
     {
-        float DelayCounter;
-        Vector3 PatrolLocation;
-        Vector3 GeneratedPoint;
-        IdleState curState;
-        IAstarAI ai;
-        Vector3 targetPos = new Vector3(10,0,10);
+        move,
+        generating,
+        stop
+    };
 
-        enum IdleState
-        {
-            move,
-            generating,
-            stop
-        };
-
-        public void OnEnter(NPC_ClassBased npc)
-        {
-            DelayCounter = npc.getpatrolDelay();
-            npc.navAgent = npc.GetComponent<NavMeshAgent>();
-            npc.anim = npc.GetComponentInChildren<Animator>();
-            ai = npc.ai;
-            if (ai != null) ai.onSearchPath += Update;
-
-
+    public void OnEnter(NPC_ClassBased npc)
+    {
+        classBased = npc;
+        DelayCounter = classBased.getpatrolDelay();
+        classBased.navAgent = classBased.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        classBased.anim = classBased.GetComponentInChildren<Animator>();
+        curState = IdleState.generating;
     }
 
-        public void Update()
+    public void DoState()
+    {        
+        Debug.DrawRay(classBased.transform.position + new Vector3(0, 1f, 0), classBased.transform.TransformDirection(Vector3.forward) * 2f, Color.yellow);
+        switch (curState)
         {
-            if ( ai != null) 
-                ai.destination = targetPos;
-        }
+            //generate next position
+            case IdleState.generating:
+                float randomDistance = Random.Range(0.0f, 10.0f);
+                int randomDirection = Random.Range(0, 4);
+                Vector3 newPosition;
+                if(randomDirection == 0)
+                {
+                    newPosition = new Vector3(randomDistance, 0, 0);
+                }
+                else if(randomDirection == 1)
+                {
+                    newPosition = new Vector3(-randomDistance, 0, 0);
+                }
+                else if (randomDirection == 2)
+                {
+                    newPosition = new Vector3(0, 0, randomDistance);
+                }
+                else if (randomDirection == 3)
+                {
+                    newPosition = new Vector3(0, 0, -randomDistance);
+                }
+                else
+                {
+                    newPosition = classBased.transform.position;
+                }
+                Vector3 targetPosition = newPosition + classBased.transform.position;
+                NavMeshPath navMeshPath = new NavMeshPath();
+                if(classBased.navAgent.CalculatePath(targetPosition, navMeshPath) && navMeshPath.status == NavMeshPathStatus.PathComplete)
+                {
+                    Debug.Log("Reachable");
+                    classBased.navAgent.SetDestination(targetPosition);
+                    curState = IdleState.move;
+                }
+                else
+                {
+                    Debug.Log("Fail");
+                }                                
+                break;
 
-        public void DoState(NPC_ClassBased npc)
-        {
-            //Debug.Log("Idle");
-
-            //Patrol(npc);
-
-            switch (curState)
-            {
-                case IdleState.move:
-                    if (CountDown())
+            //move to selected position
+            case IdleState.move:
+                RaycastHit rayHit;
+                int random = Random.Range(0, 100);
+                if(random < 30)
+                {
+                    if (classBased.navAgent.remainingDistance != Mathf.Infinity &&
+                    classBased.navAgent.pathStatus == NavMeshPathStatus.PathComplete &&
+                    classBased.navAgent.remainingDistance == 0)
                     {
-                        curState = IdleState.stop;
-                        DelayCounter = 5;
+                        Debug.Log("Finish Move");
+                        curState = IdleState.generating;
                     }
-                    else
-                    {
-                        MoveFreely(npc);
-                        npc.anim.SetBool("Moving", true);
-                    }
-                    break;
-
-                case IdleState.generating:
-                    GeneratedPoint = GenerateRandomVelocity();
-                    NavMeshHit hit;
-                    if (NavMesh.SamplePosition(npc.transform.position + GeneratedPoint * 10, out hit, Vector3.Distance(npc.transform.position + GeneratedPoint, npc.transform.position), NavMesh.AllAreas))
-                    {
-                        curState = IdleState.move;
-                    }
-                    break;
-
-                case IdleState.stop:
-                    if (CountDown())
+                    else if (Physics.Raycast(classBased.transform.position + new Vector3(0, 1f, 0), classBased.transform.TransformDirection(Vector3.forward), out rayHit, 2f))
                     {
                         curState = IdleState.generating;
-                        DelayCounter = 5;
                     }
-                    npc.anim.SetBool("Moving", false);
-                    break;
-            }
-
-            /*if (Vector3.Distance(npc.playerRef.transform.position, npc.transform.position + npc.trOffset) < npc.triggerRange)
-            {
-                npc.navAgent.ResetPath();
-                npc.ChangeState(npc.attackState);
-            }*/
-
-            if (npc.FindVisibleTargets())
-            {
-                npc.navAgent.ResetPath();
-                npc.ChangeState(npc.attackState);
-            }
-        }
-
-        void MoveFreely(NPC_ClassBased npc)
-        {
-            //Debug.Log(GenerateRandomVelocity());
-            //npc.transform.position += GeneratedPoint * Time.deltaTime;
-            //npc.transform.rotation = Quaternion.Lerp(npc.transform.rotation, Quaternion.LookRotation(GeneratedPoint), Time.deltaTime);
-        }
-
-        void Patrol(NPC_ClassBased npc)
-        {
-
-            if (npc.patrolPoint[npc.patrolPointCounter] != null)
-            {
-                float dist = npc.navAgent.remainingDistance;
-                if (npc.navAgent != null)
-                {
-                    if (dist != Mathf.Infinity && npc.navAgent.pathStatus == NavMeshPathStatus.PathComplete && npc.navAgent.remainingDistance == 0)
-                    {
-                        if (CountDown())
-                        {
-                            //npc.patrolPoint[npc.patrolPointCounter].ExitVector(PatrolLocation);
-                            npc.patrolPointCounter = (npc.patrolPointCounter + 1) % npc.patrolPoint.Count;
-                            DelayCounter = npc.getpatrolDelay();
-                            //PatrolLocation = npc.patrolPoint[npc.patrolPointCounter].AvailablePoint();
-                            PatrolLocation = npc.RandomMovePosition();
-
-                        }
-                        npc.anim.SetBool("Moving", false);
-                    }
-                    else
-                    {
-                        npc.anim.SetBool("Moving", true);
-                    }
-                    //npc.navAgent.SetDestination(npc.patrolPoint[npc.patrolPointCounter].GenerateRandomPoint());
-                    /*if(PatrolLocation != Vector3.zero)
-                    {
-                        npc.navAgent.SetDestination(PatrolLocation);
-                    }
-                    else
-                    {
-                        npc.patrolPointCounter = (npc.patrolPointCounter + 1) % npc.patrolPoint.Count;
-                        PatrolLocation = npc.patrolPoint[npc.patrolPointCounter].AvailablePoint();
-                    }*/
-                    npc.navAgent.SetDestination(PatrolLocation);
-
                 }
+                else
+                {
+                    float randomCountdown = Random.Range(0.0f, 5.0f);
+                    DelayCounter = randomCountdown;
+                    curState = IdleState.stop;
+                }
+                
+                break;
 
-            }
-            else
-            {
-                Debug.LogWarning("Patrol point empty !!!");
-            }
+            //stop for period of time
+            case IdleState.stop:              
+                if (CountDown())
+                {
+                    curState = IdleState.generating;
+                }
+                Debug.Log("Stop");
+                break;
         }
 
-        Vector3 GenerateRandomVelocity()
+        if(classBased.FindVisibleTargets())
         {
-            Vector3 GeneratedVelocity = new Vector3(Random.Range(-1, 2), 0, Random.Range(-1, 2));
-            return GeneratedVelocity;
+            classBased.ChangeState(classBased.attackState);
         }
-
-        bool CountDown()
-        {
-            DelayCounter -= Time.deltaTime;
-            if (DelayCounter <= 0)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public void OnExit()
-        {
-
-        }
+        
     }
+  
+    bool CountDown()
+    {
+        DelayCounter -= Time.deltaTime;
+        if (DelayCounter <= 0)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void OnExit()
+    {
+
+    }
+}
 
 

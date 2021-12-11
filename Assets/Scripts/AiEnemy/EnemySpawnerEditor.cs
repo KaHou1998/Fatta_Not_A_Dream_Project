@@ -16,7 +16,7 @@ public class EnemySpawnerEditor : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        if (spawner.waypoints == null)
+        /*if (spawner.waypoints == null)
         {
             return;
         }
@@ -40,7 +40,7 @@ public class EnemySpawnerEditor : Editor
         if (spawner.waypoints.Count == 0)
         {
             EditorGUILayout.HelpBox("Empty Waypoint", MessageType.Info);
-        }
+        }*/
 
         EditorUtility.SetDirty(spawner);
     }

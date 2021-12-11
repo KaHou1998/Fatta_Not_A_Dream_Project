@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using Pathfinding;
 
 public class NPC_ClassBased : Enemy     
 {
@@ -40,27 +39,21 @@ public class NPC_ClassBased : Enemy
     [Range(0, 360)]
     public float viewAngle;
     public LayerMask targetMask;
-    public float movementRangeMin;
-    public float movementRangeMax;
+    public float movementRange;
     public float movingSpeed = 2.0f;
 
-    GameObject[] EnemyAI;
-    public IAstarAI ai;
-
-
-    private void OnEnable()
+    private void Awake()
     {
         currentState = idleState;
         newState = currentState;
         patrolPointCounter = 0;
         playerRef = GameObject.Find("Player");
-        ai = GetComponent<IAstarAI>();
+        navAgent = GetComponent<NavMeshAgent>();
         Init();
     }
 
     public void Start()
     {
-        EnemyAI = GameObject.FindGameObjectsWithTag("EnemyAi");
         currentState.OnEnter(this);
     }
 
@@ -91,36 +84,15 @@ public class NPC_ClassBased : Enemy
 
     private void Update()
     {
-        //currentState.DoState(this);
-        currentState.Update();
+        currentState.DoState();
         if (newState != currentState)
         {
-            //currentState.OnExit();
             newState.OnEnter(this);
             currentState = newState;
         }
 
-        /*foreach(GameObject go in EnemyAI)
-        {
-            if(go != gameObject)
-            {
-                float distance = Vector3.Distance(go.transform.position, this.transform.position);
-                if(distance <= spaceBetween)
-                {
-                    Vector3 direction = transform.position - go.transform.position;
-                    //transform.Translate(direction * Time.deltaTime);
-                }
-            }
-        }*/
-    }
-
-   public Vector3 RandomMovePosition()
-    {
-        //Vector3 randomMovePosition = new Vector3(Random.Range(this.transform.position.x + movementRangeMin, this.transform.position.x + movementRangeMax),1.036f, Random.Range(this.transform.position.z + movementRangeMin, this.transform.position.z + movementRangeMax));
-        Vector3 randomMovePosition = new Vector3(Random.Range(this.transform.position.x - Random.Range(movementRangeMin, movementRangeMax), this.transform.position.x + Random.Range(movementRangeMin, movementRangeMax)),
-                                                  1.036f,
-                                                 Random.Range(this.transform.position.z - Random.Range(movementRangeMin, movementRangeMax), this.transform.position.z + Random.Range(movementRangeMin, movementRangeMax)));
-        return randomMovePosition;
+        Vector3 relVelocity = transform.InverseTransformDirection(navAgent.velocity);
+        anim.SetFloat("NormalizedSpeed", relVelocity.magnitude / anim.transform.lossyScale.x);
     }
   
     void OnDrawGizmosSelected()
@@ -131,11 +103,8 @@ public class NPC_ClassBased : Enemy
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, meleeRange);
 
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, movementRangeMin);
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, movementRangeMax);
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireSphere(transform.position, movementRange);
     }    
 
     protected override void Init()

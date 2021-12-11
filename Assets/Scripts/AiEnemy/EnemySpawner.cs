@@ -16,7 +16,6 @@ public class EnemySpawner : MonoBehaviour
     public int spawnRate = 1;
     public float spawnRadius = 4.0f;
     public int maxSpawn = 5;
-    public List<Waypoint> waypoints;
 
     float spawnCounter;
 
@@ -43,10 +42,10 @@ public class EnemySpawner : MonoBehaviour
                 {
                     GameObject _enemy = Instantiate(enemyPrefab, RandomLocation(), Quaternion.identity);
                     _enemy.GetComponent<NPC_ClassBased>().patrolPoint = new List<Waypoint>();
-                    for (int t = 0; t < waypoints.Count; t++)
+                    /*for (int t = 0; t < waypoints.Count; t++)
                     {
                         _enemy.GetComponent<NPC_ClassBased>().patrolPoint.Add(waypoints[t]);
-                    }
+                    }*/
                     enemyManager.Enemies.Add(_enemy);
                     enemies.Add(_enemy);
                 }
@@ -58,13 +57,15 @@ public class EnemySpawner : MonoBehaviour
     Vector3 RandomLocation()
     {
         //Vector3 SpawnLocation = new Vector3(Random.Range(this.transform.position.x-spawnRadius, this.transform.position.x+spawnRadius), 
-                                            //1.036f, Random.Range(this.transform.position.z - spawnRadius, this.transform.position.z + spawnRadius));
+        //1.036f, Random.Range(this.transform.position.z - spawnRadius, this.transform.position.z + spawnRadius));
 
-        Vector3 SpawnLocation = new Vector3(Random.Range(transform.position.x - spawnRadius, this.transform.position.x + spawnRadius), 1.036f, Random.Range(this.transform.position.z - spawnRadius, this.transform.position.z + spawnRadius));
+        //Vector3 SpawnLocation = new Vector3(Random.Range(transform.position.x - spawnRadius, this.transform.position.x + spawnRadius), 1.036f, Random.Range(this.transform.position.z - spawnRadius, this.transform.position.z + spawnRadius));
+        Vector3 randomPos = Random.insideUnitSphere * spawnRadius;
+        Vector3 SpawnLocation = new Vector3(randomPos.x + transform.position.x  , transform.position.y, randomPos.z + transform.position.z);
         return SpawnLocation;
     }
 
-    public void GenerateRandomWaypoint()
+    /*public void GenerateRandomWaypoint()
     {
         GameObject waypoint = Instantiate(waypointPrefab.gameObject, RandomLocation(), Quaternion.identity);
         waypoint.transform.parent = this.transform;
@@ -76,6 +77,6 @@ public class EnemySpawner : MonoBehaviour
         Waypoint waypoint = waypoints[waypoints.Count - 1];
         waypoints.Remove(waypoint);
         DestroyImmediate(waypoint);
-    }
+    }*/
 
 }

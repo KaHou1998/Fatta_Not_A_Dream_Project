@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class NPC_EnemyAttackState : EnemyState
 {
@@ -17,41 +16,41 @@ public class NPC_EnemyAttackState : EnemyState
 
     float attackDelayCounter;
 
+    NPC_ClassBased classBased;
+
+
     public void OnEnter(NPC_ClassBased npc)
     {
-        npc.navAgent = npc.GetComponent<NavMeshAgent>();
-        npc.mesh = npc.GetComponent<Renderer>();
-        npc.anim = npc.GetComponentInChildren<Animator>();
-        
-    }
-
-    public void Update()
-    {
+        classBased = npc;
+        classBased.mesh = classBased.GetComponent<Renderer>();
+        classBased.anim = classBased.GetComponentInChildren<Animator>();
 
     }
-    public void DoState(NPC_ClassBased npc)
+
+    public void DoState()
     {       
         switch (_attackState)
         {
             case attackState.searchEnemy:
-                MoveToAttackTarget(npc);
+                MoveToAttackTarget();
                 Debug.Log("search");
                 break;
 
             case attackState.attackStart:
                 _attackState = attackState.attacking;
+                classBased.navAgent.isStopped = true;
                 Debug.Log("attack start");
                 break;
 
             case attackState.attacking:
-                npc.anim.SetBool("Moving", false);
-                npc.transform.LookAt(npc.playerRef.transform);
-                Attack(npc);
+                classBased.transform.LookAt(classBased.playerRef.transform);
+                Attack();
                 Debug.Log("attacking");
                 break;
 
             case attackState.attackEnd:
                 _attackState = attackState.searchEnemy;
+                classBased.navAgent.isStopped = false;
                 Debug.Log("attack end");
                 break;
         }
@@ -61,43 +60,40 @@ public class NPC_EnemyAttackState : EnemyState
         if (_attackState == attackState.attackEnd)
         {
             ResetState();
-            //return npc.idleState;
-            npc.ChangeState(npc.idleState);
+            classBased.ChangeState(classBased.idleState);
         }
         else
         {
-            //return npc.attackState;
-            npc.ChangeState(npc.attackState);
+            classBased.ChangeState(classBased.attackState);
         }  
     }
 
-    void MoveToAttackTarget(NPC_ClassBased npc)
+    void MoveToAttackTarget()
     {
-        if (npc.playerRef != null)
+        if (classBased.playerRef != null)
         {
-            if (IsPlayerInTriggerRange(npc))
+            if (IsPlayerInTriggerRange())
             {
-                   npc.navAgent.ResetPath();
                    _attackState = attackState.attackStart;
             }
             else 
             {
-                   npc.anim.SetBool("Moving", true);
-                   npc.navAgent.SetDestination(npc.playerRef.transform.position);
-                   npc.transform.LookAt(npc.playerRef.transform);
+                //classBased.anim.SetBool("Moving", true);
+                classBased.transform.LookAt(classBased.playerRef.transform);
+                classBased.navAgent.SetDestination(classBased.playerRef.transform.position);
             }            
         }
       
     }
 
-    void Attack(NPC_ClassBased npc)
+    void Attack()
     {
         if (CountDown())
         {            
-            Debug.Log("Duel damage: " + npc.getDamage());
-            npc.anim.SetTrigger("IsAttack");
-            attackDelayCounter = npc.getAttackDelay();
-            if(!IsPlayerInTriggerRange(npc))
+            Debug.Log("Duel damage: " + classBased.getDamage());
+            classBased.anim.SetTrigger("IsAttack");
+            attackDelayCounter = classBased.getAttackDelay();
+            if(!IsPlayerInTriggerRange())
             {
                 _attackState = attackState.attackEnd;
             }
@@ -124,9 +120,9 @@ public class NPC_EnemyAttackState : EnemyState
 
     }
 
-    bool IsPlayerInTriggerRange(NPC_ClassBased npc)
+    bool IsPlayerInTriggerRange()
     {
-        if(Vector3.Distance(npc.transform.position, npc.playerRef.transform.position) < npc.meleeRange + (npc.transform.localScale.x / 2))
+        if(Vector3.Distance(classBased.transform.position, classBased.playerRef.transform.position) < classBased.meleeRange + (classBased.transform.localScale.x / 2))
         {
             return true;
         }
