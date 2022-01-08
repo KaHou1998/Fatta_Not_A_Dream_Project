@@ -6,14 +6,28 @@ using UnityEngine.AI;
 public class NPC_EnemyIdleState : EnemyState
 {
     float DelayCounter;
-    IdleState curState;
+    //IdleState curState;
+    MinecraftState curState;
+    Vector3 randomRotation;
+    float moveDistance;
+    Vector3 targetPosition;
 
     NPC_ClassBased classBased;
     enum IdleState
     {
         move,
-        generating,
+        rotate,
+        generating_rotation,
+        generating_destination,
         stop
+    };
+
+    enum MinecraftState
+    {
+        idle, 
+        decide,
+        move,
+        rotate
     };
 
     public void OnEnter(NPC_ClassBased npc)
@@ -22,95 +36,78 @@ public class NPC_EnemyIdleState : EnemyState
         DelayCounter = classBased.getpatrolDelay();
         classBased.navAgent = classBased.GetComponent<UnityEngine.AI.NavMeshAgent>();
         classBased.anim = classBased.GetComponentInChildren<Animator>();
-        curState = IdleState.generating;
+        curState = MinecraftState.decide;
     }
 
     public void DoState()
     {        
         Debug.DrawRay(classBased.transform.position + new Vector3(0, 1f, 0), classBased.transform.TransformDirection(Vector3.forward) * 2f, Color.yellow);
-        switch (curState)
-        {
-            //generate next position
-            case IdleState.generating:
-                float randomDistance = Random.Range(0.0f, 10.0f);
-                int randomDirection = Random.Range(0, 4);
-                Vector3 newPosition;
-                if(randomDirection == 0)
-                {
-                    newPosition = new Vector3(randomDistance, 0, 0);
-                }
-                else if(randomDirection == 1)
-                {
-                    newPosition = new Vector3(-randomDistance, 0, 0);
-                }
-                else if (randomDirection == 2)
-                {
-                    newPosition = new Vector3(0, 0, randomDistance);
-                }
-                else if (randomDirection == 3)
-                {
-                    newPosition = new Vector3(0, 0, -randomDistance);
-                }
-                else
-                {
-                    newPosition = classBased.transform.position;
-                }
-                Vector3 targetPosition = newPosition + classBased.transform.position;
-                NavMeshPath navMeshPath = new NavMeshPath();
-                if(classBased.navAgent.CalculatePath(targetPosition, navMeshPath) && navMeshPath.status == NavMeshPathStatus.PathComplete)
-                {
-                    Debug.Log("Reachable");
-                    classBased.navAgent.SetDestination(targetPosition);
-                    curState = IdleState.move;
-                }
-                else
-                {
-                    Debug.Log("Fail");
-                }                                
-                break;
+        MinecraftMovement();
 
-            //move to selected position
-            case IdleState.move:
-                RaycastHit rayHit;
-                int random = Random.Range(0, 100);
-                if(random < 30)
-                {
-                    if (classBased.navAgent.remainingDistance != Mathf.Infinity &&
-                    classBased.navAgent.pathStatus == NavMeshPathStatus.PathComplete &&
-                    classBased.navAgent.remainingDistance == 0)
-                    {
-                        Debug.Log("Finish Move");
-                        curState = IdleState.generating;
-                    }
-                    else if (Physics.Raycast(classBased.transform.position + new Vector3(0, 1f, 0), classBased.transform.TransformDirection(Vector3.forward), out rayHit, 2f))
-                    {
-                        curState = IdleState.generating;
-                    }
-                }
-                else
-                {
-                    float randomCountdown = Random.Range(0.0f, 5.0f);
-                    DelayCounter = randomCountdown;
-                    curState = IdleState.stop;
-                }
-                
-                break;
-
-            //stop for period of time
-            case IdleState.stop:              
-                if (CountDown())
-                {
-                    curState = IdleState.generating;
-                }
-                Debug.Log("Stop");
-                break;
-        }
-
-        if(classBased.FindVisibleTargets())
+        if (classBased.FindVisibleTargets())
         {
             classBased.ChangeState(classBased.attackState);
         }
         
+    }
+
+    void MinecraftMovement()
+    {
+        switch (curState)
+        {
+            case MinecraftState.idle:
+                
+                if(CountDown())
+                {
+                    curState = MinecraftState.decide;
+                    Debug.Log("Decide");
+                }
+                break;          
+            case MinecraftState.decide:
+                
+                if (Random.Range(0, 100f) > 50f)
+                {                    
+                    targetPosition = classBased.transform.position + Random.insideUnitSphere * 5.0f;
+                    NavMeshHit hit;
+                    if(NavMesh.SamplePosition (targetPosition, out hit, 1.0f, NavMesh.AllAreas))
+                    {
+                        curState = MinecraftState.move;
+                        Debug.Log("Move");
+                    }
+                }
+                else
+                {
+                    curState = MinecraftState.rotate;
+                    randomRotation = new Vector3(0, Random.Range(classBased.transform.rotation.eulerAngles.y - 20.0f, classBased.transform.rotation.eulerAngles.y + 20.0f), 0);
+                    Debug.Log("Rotate");
+                }
+                DelayCounter = Random.Range(0.5f, 2.0f);
+                break;
+            case MinecraftState.move:
+                if (!CountDown())
+                {
+                    classBased.navAgent.SetDestination(targetPosition);
+                }
+                else
+                {
+                    curState = MinecraftState.idle;
+                    Debug.Log("Idle");
+                    DelayCounter = Random.Range(0.5f, 2.0f);
+                }
+                break;
+            case MinecraftState.rotate:
+                if (!CountDown())
+                {
+                    classBased.transform.eulerAngles = Vector3.Lerp(classBased.transform.rotation.eulerAngles, randomRotation, Time.deltaTime * 2.0f);
+                }
+                else
+                {
+                    curState = MinecraftState.idle;
+                    Debug.Log("Idle");
+                    DelayCounter = Random.Range(0.5f, 2.0f);
+                }
+                break;
+        }
     }
   
     bool CountDown()
