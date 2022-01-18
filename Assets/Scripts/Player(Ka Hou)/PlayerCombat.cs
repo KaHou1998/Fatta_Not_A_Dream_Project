@@ -24,4 +24,5 @@ public class PlayerCombat : MonoBehaviour
     {
         animator.SetTrigger("IsAttack");
     }
+   
 }

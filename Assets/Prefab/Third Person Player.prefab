@@ -114,15 +114,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a00cf5e54b2b2d41a573a502e94d632, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movement: {fileID: 8933465556955168175}
-  hp: 0
-  mp: 0
-  animator: {fileID: 8709710545687869384}
-  damage: 0
   controller: {fileID: 8709710545687869390}
-  cam: {fileID: 0}
-  speed: 6
+  rb: {fileID: 0}
+  normalSpeed: 6
+  sprintSpeed: 100
+  dodgeSpeed: 1000
+  jump: 10
   turnSmoothTime: 0.1
+  Gravity: -9.8
+  characterBase: {fileID: 0}
 --- !u!1001 &8709710544913894181
 PrefabInstance:
   m_ObjectHideFlags: 0
