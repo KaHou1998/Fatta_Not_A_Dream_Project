@@ -3,16 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
+public enum Status
+{
+    OnAir,
+    OnGround
+}
+
 public class ThirdPersonController : MonoBehaviour
 {
     public CharacterController controller;
-    public Rigidbody rb;
     public float normalSpeed = 6f;
     public float sprintSpeed = 100f;
     public float dodgeSpeed = 1000f;
     public float jump = 10f;
     public float turnSmoothTime = 0.1f;
-    public float Gravity = -9.8f;
+    
+    public float dashTime;
+    public float dashSpeed;
     public CharacterBase characterBase;
 
     private Animator anim;
@@ -20,7 +27,12 @@ public class ThirdPersonController : MonoBehaviour
     private float turnSmoothVelocity;
     private Vector3 velocity;
     private float movementSpeed;
+    private Status status;
+    private float gravityStrength = -9.8f;
 
+    private Vector3 moveDir;
+
+    private bool isDashing;
     public void Awake()
     {
         anim = characterBase.animator;
@@ -30,10 +42,24 @@ public class ThirdPersonController : MonoBehaviour
     void Update()
     {
         Cursor.lockState = CursorLockMode.Locked;
-        Sprint();
-        Movement();
-        Jump();
-        
+        UpdateStatus();
+
+        switch (status)
+        {
+            case Status.OnAir:
+                Gravity();
+                break;
+
+            case Status.OnGround:
+                if(!isDashing)
+                {
+                    Dash();
+                    Movement();
+                    Sprint();
+                    Jump();
+                }             
+                break;
+        }       
     }
 
     void Movement()
@@ -43,12 +69,13 @@ public class ThirdPersonController : MonoBehaviour
         Vector3 direction = new Vector3(horizontal, 0, vertical).normalized;
 
         if (direction.magnitude >= 0.1f)
-        {           
+        {
+            
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
-            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
             controller.Move(moveDir.normalized * movementSpeed * Time.deltaTime);
         }
         anim.SetFloat("NormalizedSpeed", direction.magnitude);
@@ -56,14 +83,28 @@ public class ThirdPersonController : MonoBehaviour
 
     void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && transform.localPosition.y < -2f)
+        if (Input.GetKeyDown(KeyCode.Space))
         { 
             velocity.y = jump;
         }
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    void UpdateStatus()
+    {
+        if (transform.localPosition.y < -2f)
+        {
+            status = Status.OnGround;
+        }
         else
         {
-            velocity.y += Gravity * Time.deltaTime;
+            status = Status.OnAir;
         }
+    }
+
+    void Gravity()
+    {
+        velocity.y += gravityStrength * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
 
@@ -79,12 +120,25 @@ public class ThirdPersonController : MonoBehaviour
         }
     }
 
-    void Dodge(Vector3 direction)
+    void Dash()
     {
-        if(Input.GetKeyDown(KeyCode.LeftControl))
+        if (Input.GetKeyDown(KeyCode.LeftControl) )
         {
-            Debug.Log("Dodging");
-            rb.AddForce(direction * dodgeSpeed, ForceMode.VelocityChange);
+            isDashing = true;
+            StartCoroutine("Dashing");
         }      
+    }
+
+    IEnumerator Dashing()
+    {
+        float startTime = Time.time;
+
+        while (Time.time < startTime + dashTime)
+        {
+            controller.Move(moveDir * dashSpeed * Time.deltaTime);
+            isDashing = false;
+            yield return null;
+        }
+        
     }
 }
